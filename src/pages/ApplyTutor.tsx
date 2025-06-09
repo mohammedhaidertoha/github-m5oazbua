@@ -1,11 +1,11 @@
-import { useState, ChangeEvent, FormEvent } from 'react';
+import { useState, ChangeEvent, FormEvent, useRef } from 'react';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Send, Star, Info, Upload } from 'lucide-react';
+import { Send, Star, Info, Upload, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 const ApplyTutor = () => {
@@ -19,21 +19,20 @@ const ApplyTutor = () => {
   const [cvFile, setCvFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formMessage, setFormMessage] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      // Check file type
+  const handleFile = (file: File | null) => {
+    if (file) {
       if (!file.type.includes('pdf')) {
         setFormMessage({ type: 'error', message: 'Please upload a PDF file' });
         return;
       }
-      // Check file size (5MB limit)
       if (file.size > 5 * 1024 * 1024) {
         setFormMessage({ type: 'error', message: 'File size must be less than 5MB' });
         return;
@@ -41,6 +40,42 @@ const ApplyTutor = () => {
       setCvFile(file);
       setFormMessage(null);
     }
+  };
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      handleFile(e.target.files[0]);
+    }
+  };
+
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+  
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const openFileDialog = () => {
+    fileInputRef.current?.click();
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -96,6 +131,9 @@ const ApplyTutor = () => {
         subjects: '',
       });
       setCvFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
       setFormMessage({ type: 'success', message: 'Application submitted successfully!' });
 
     } catch (error) {
@@ -198,20 +236,55 @@ const ApplyTutor = () => {
 
                 <div>
                   <Label htmlFor="cv" className="text-pa-text-muted block mb-2">Upload CV (PDF only) *</Label>
-                  <div className="flex items-center space-x-2">
+                  <div
+                    onClick={openFileDialog}
+                    onDrop={handleDrop}
+                    onDragOver={handleDragOver}
+                    onDragEnter={handleDragEnter}
+                    onDragLeave={handleDragLeave}
+                    className={`
+                      relative flex flex-col items-center justify-center p-6 mt-1 border-2 border-dashed rounded-lg cursor-pointer transition-colors duration-200
+                      ${isDragging ? 'border-pa-accent bg-pa-card-light' : 'border-pa-card-light hover:border-pa-text-muted'}
+                    `}
+                  >
                     <Input
-                      required
+                      ref={fileInputRef}
                       id="cv"
                       type="file"
                       accept=".pdf"
                       onChange={handleFileChange}
-                      className="bg-pa-dark border-pa-card-light text-pa-text file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-pa-text file:text-pa-black hover:file:bg-pa-text-secondary"
+                      className="hidden"
                     />
-                    {cvFile && (
-                      <Upload className="h-5 w-5 text-green-500" />
+                    {cvFile ? (
+                      <div className="text-center">
+                        <Upload className="h-8 w-8 mx-auto text-green-500 mb-2" />
+                        <p className="text-sm font-medium text-pa-text">{cvFile.name}</p>
+                        <p className="text-xs text-pa-text-muted mt-1">{Math.round(cvFile.size / 1024)} KB</p>
+                        <Button
+                          type="button"
+                          variant="link"
+                          className="text-red-500 text-xs h-auto p-1 mt-2"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCvFile(null);
+                            if (fileInputRef.current) {
+                              fileInputRef.current.value = '';
+                            }
+                          }}
+                        >
+                          Remove file
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <Upload className="h-8 w-8 mx-auto text-pa-text-muted mb-2" />
+                        <p className="text-sm font-medium text-pa-text">
+                          <span className="text-pa-accent">Click to upload</span> or drag and drop
+                        </p>
+                        <p className="text-xs text-pa-text-muted mt-1">PDF only, max 5MB</p>
+                      </div>
                     )}
                   </div>
-                  <p className="text-xs text-pa-text-muted mt-1">Maximum file size: 5MB</p>
                 </div>
                 
                 {formMessage && (
