@@ -42,9 +42,9 @@ const Header = () => {
           <Link to="/" className="flex items-center group">
             <div className="relative">
               <img 
-                src="/placeholder_logo.png" 
+                src="/Untitled design.png" 
                 alt="Provost Academics" 
-                className="h-12 transition-transform duration-300 group-hover:scale-105" 
+                className="h-36 transition-transform duration-300 group-hover:scale-100" 
               />
               <div className="absolute inset-0 bg-gradient-to-r from-pa-accent/20 to-transparent rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur-xl"></div>
             </div>
