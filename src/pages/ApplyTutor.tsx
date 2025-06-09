@@ -1,0 +1,246 @@
+import { useState, ChangeEvent, FormEvent } from 'react';
+import Layout from '@/components/Layout';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Send, Star, Info, Upload } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+
+const ApplyTutor = () => {
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    qualifications: '',
+    subjects: '',
+  });
+  const [cvFile, setCvFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formMessage, setFormMessage] = useState<{ type: 'success' | 'error' | 'info'; message: string } | null>(null);
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      // Check file type
+      if (!file.type.includes('pdf')) {
+        setFormMessage({ type: 'error', message: 'Please upload a PDF file' });
+        return;
+      }
+      // Check file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        setFormMessage({ type: 'error', message: 'File size must be less than 5MB' });
+        return;
+      }
+      setCvFile(file);
+      setFormMessage(null);
+    }
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setFormMessage(null);
+
+    // Validate all fields
+    if (!formData.fullName || !formData.email || !formData.phone || 
+        !formData.qualifications || !formData.subjects || !cvFile) {
+      setFormMessage({ type: 'error', message: 'All fields are required' });
+      setIsSubmitting(false);
+      return;
+    }
+
+    try {
+      // 1. Upload CV to Supabase Storage
+      const fileExt = cvFile.name.split('.').pop();
+      const fileName = `${Date.now()}-${formData.fullName.replace(/\s+/g, '-')}.${fileExt}`;
+      
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('tutor-cvs')
+        .upload(fileName, cvFile);
+
+      if (uploadError) {
+        console.error('Upload Error:', uploadError);
+        throw new Error('Failed to upload CV');
+      }
+
+      // 2. Save application to database
+      const { error: insertError } = await supabase
+        .from('tutor_applications')
+        .insert({
+          full_name: formData.fullName,
+          email: formData.email,
+          phone_number: formData.phone,
+          qualifications: formData.qualifications,
+          subjects: formData.subjects,
+          cv_url: uploadData.path
+        });
+
+      if (insertError) {
+        console.error('Insert Error:', insertError);
+        throw new Error(`Failed to submit application: ${insertError.message}`);
+      }
+
+      // Clear form on success
+      setFormData({
+        fullName: '',
+        email: '',
+        phone: '',
+        qualifications: '',
+        subjects: '',
+      });
+      setCvFile(null);
+      setFormMessage({ type: 'success', message: 'Application submitted successfully!' });
+
+    } catch (error) {
+      setFormMessage({ 
+        type: 'error', 
+        message: error instanceof Error ? error.message : 'Failed to submit application' 
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Layout>
+      <section className="py-20 lg:py-24 bg-pa-dark text-center">
+        <div className="container mx-auto px-4">
+          <Star className="h-16 w-16 text-pa-text-secondary mx-auto mb-6" />
+          <h1 className="font-heading font-bold text-4xl lg:text-5xl text-pa-text mb-6">
+            Apply to Become a Tutor
+          </h1>
+          <p className="text-lg lg:text-xl text-pa-text-secondary max-w-3xl mx-auto leading-relaxed">
+            Join our elite team of tutors. Share your expertise and contribute to academic success.
+          </p>
+        </div>
+      </section>
+
+      <section id="application-form" className="py-16 bg-pa-dark">
+        <div className="container mx-auto px-4">
+          <Card className="max-w-3xl mx-auto bg-pa-card border-pa-card-light shadow-xl">
+            <CardHeader className="text-center border-b border-pa-card-light pb-6">
+              <CardTitle className="font-heading text-3xl text-pa-text">Tutor Application Form</CardTitle>
+              <CardDescription className="text-pa-text-secondary pt-2">All fields are mandatory.</CardDescription>
+            </CardHeader>
+            <CardContent className="pt-8">
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <Label htmlFor="fullName" className="text-pa-text-muted block mb-2">Full Name *</Label>
+                    <Input 
+                      required
+                      id="fullName" 
+                      name="fullName" 
+                      value={formData.fullName} 
+                      onChange={handleChange} 
+                      className="bg-pa-dark border-pa-card-light text-pa-text" 
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="email" className="text-pa-text-muted block mb-2">Email Address *</Label>
+                    <Input 
+                      required
+                      id="email" 
+                      name="email" 
+                      type="email" 
+                      value={formData.email} 
+                      onChange={handleChange} 
+                      className="bg-pa-dark border-pa-card-light text-pa-text" 
+                    />
+                  </div>
+                </div>
+                
+                <div>
+                  <Label htmlFor="phone" className="text-pa-text-muted block mb-2">Phone Number *</Label>
+                  <Input 
+                    required
+                    id="phone" 
+                    name="phone" 
+                    type="tel" 
+                    value={formData.phone} 
+                    onChange={handleChange} 
+                    className="bg-pa-dark border-pa-card-light text-pa-text" 
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="qualifications" className="text-pa-text-muted block mb-2">Your Qualifications *</Label>
+                  <Textarea 
+                    required
+                    id="qualifications" 
+                    name="qualifications" 
+                    placeholder="e.g., A-Levels in Maths (A*), Physics (A)..." 
+                    value={formData.qualifications} 
+                    onChange={handleChange} 
+                    className="bg-pa-dark border-pa-card-light text-pa-text" 
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="subjects" className="text-pa-text-muted block mb-2">Subjects You Can Teach *</Label>
+                  <Textarea 
+                    required
+                    id="subjects" 
+                    name="subjects" 
+                    placeholder="e.g., GCSE Maths, A-Level Physics..." 
+                    value={formData.subjects} 
+                    onChange={handleChange} 
+                    className="bg-pa-dark border-pa-card-light text-pa-text" 
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="cv" className="text-pa-text-muted block mb-2">Upload CV (PDF only) *</Label>
+                  <div className="flex items-center space-x-2">
+                    <Input
+                      required
+                      id="cv"
+                      type="file"
+                      accept=".pdf"
+                      onChange={handleFileChange}
+                      className="bg-pa-dark border-pa-card-light text-pa-text file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-pa-text file:text-pa-black hover:file:bg-pa-text-secondary"
+                    />
+                    {cvFile && (
+                      <Upload className="h-5 w-5 text-green-500" />
+                    )}
+                  </div>
+                  <p className="text-xs text-pa-text-muted mt-1">Maximum file size: 5MB</p>
+                </div>
+                
+                {formMessage && (
+                  <div className={`p-3 rounded-md text-sm flex items-start space-x-2 ${
+                    formMessage.type === 'success' ? 'bg-green-900/20 text-green-400' :
+                    formMessage.type === 'error' ? 'bg-red-900/20 text-red-400' :
+                    'bg-blue-900/20 text-blue-400'
+                  }`}>
+                    <Info className="h-5 w-5 flex-shrink-0" />
+                    <p>{formMessage.message}</p>
+                  </div>
+                )}
+
+                <Button 
+                  type="submit" 
+                  size="lg" 
+                  disabled={isSubmitting}
+                  className="w-full bg-pa-text text-pa-black hover:bg-pa-text-secondary group flex items-center justify-center"
+                >
+                  {isSubmitting ? 'Submitting...' : 'Submit Application'}
+                  <Send className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
+    </Layout>
+  );
+};
+
+export default ApplyTutor; 

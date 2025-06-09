@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://provost-academics.vercel.app/sitemap.xml

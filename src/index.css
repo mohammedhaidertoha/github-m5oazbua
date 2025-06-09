@@ -1,0 +1,194 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+
+    --card: 0 0% 11%;
+    --card-foreground: 0 0% 100%;
+
+    --popover: 0 0% 6.7%;
+    --popover-foreground: 0 0% 100%;
+
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 0%;
+
+    --secondary: 0 0% 16.5%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 0 0% 16.5%;
+    --muted-foreground: 0 0% 63.9%;
+
+    --accent: 0 0% 16.5%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 16.5%;
+    --input: 0 0% 16.5%;
+    --ring: 0 0% 83.1%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 0 0% 6.7%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 0 0% 100%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 0 0% 16.5%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 16.5%;
+    --sidebar-ring: 0 0% 83.1%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-pa-black text-pa-text font-body antialiased;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-pa-dark;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-pa-text-muted rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-pa-text-secondary;
+  }
+}
+
+@layer components {
+  .gradient-text {
+    @apply bg-gradient-to-r from-pa-text via-pa-accent to-pa-text-secondary bg-clip-text text-transparent;
+  }
+
+  .gradient-text-subtle {
+    @apply bg-gradient-to-r from-pa-text to-pa-text-secondary bg-clip-text text-transparent;
+  }
+
+  .glass-card {
+    @apply bg-pa-card/80 backdrop-blur-md border border-pa-border;
+  }
+
+  .glass-card-light {
+    @apply bg-pa-card-light/60 backdrop-blur-sm border border-pa-border-light;
+  }
+
+  .hover-lift {
+    @apply transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-elegant;
+  }
+
+  .hover-glow {
+    @apply transition-all duration-300 ease-out hover:shadow-glow;
+  }
+
+  .shimmer-effect {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .shimmer-effect::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(244, 244, 245, 0.1),
+      transparent
+    );
+    animation: shimmer 2s infinite;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .section-padding {
+    @apply py-20 lg:py-28;
+  }
+
+  .container-padding {
+    @apply px-4 lg:px-6;
+  }
+
+  /* Enhanced button styles */
+  .btn-primary {
+    @apply bg-pa-accent text-pa-black hover:bg-pa-accent-secondary transition-all duration-300 font-medium;
+  }
+
+  .btn-secondary {
+    @apply bg-transparent border border-pa-accent text-pa-accent hover:bg-pa-accent hover:text-pa-black transition-all duration-300;
+  }
+
+  /* Typography improvements */
+  .heading-xl {
+    @apply font-heading font-bold text-4xl lg:text-6xl xl:text-7xl leading-tight tracking-tight;
+  }
+
+  .heading-lg {
+    @apply font-heading font-bold text-3xl lg:text-5xl leading-tight tracking-tight;
+  }
+
+  .heading-md {
+    @apply font-heading font-semibold text-2xl lg:text-3xl leading-tight;
+  }
+
+  .body-lg {
+    @apply text-lg lg:text-xl leading-relaxed;
+  }
+
+  .body-md {
+    @apply text-base lg:text-lg leading-relaxed;
+  }
+
+  /* Animation delays for staggered effects */
+  .animate-delay-100 {
+    animation-delay: 100ms;
+  }
+
+  .animate-delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .animate-delay-300 {
+    animation-delay: 300ms;
+  }
+
+  .animate-delay-500 {
+    animation-delay: 500ms;
+  }
+}
+
+@layer utilities {
+  .text-shadow {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .text-shadow-lg {
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+}
