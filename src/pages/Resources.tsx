@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import Layout from '@/components/Layout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 // import { Download, Filter, Search, FileSpreadsheet } from 'lucide-react'; 
 import { supabase } from '@/integrations/supabase/client';
 
@@ -169,7 +170,7 @@ const Resources = () => {
               size="lg" 
               className="bg-pa-text text-pa-black hover:bg-pa-text-secondary transition-all duration-300 px-8 py-6 text-lg font-semibold"
             >
-              <a href="/services">Explore Our Services</a>
+              <Link to="/services">Explore Our Services</Link>
             </Button>
             <Button 
               asChild
@@ -177,7 +178,7 @@ const Resources = () => {
               size="lg"
               className="bg-transparent border-pa-text text-pa-text hover:bg-pa-text hover:text-pa-black transition-all duration-300 px-8 py-6 text-lg font-semibold"
             >
-              <a href="/contact">Book Free Consultation</a>
+              <Link to="/contact">Book Free Consultation</Link>
             </Button>
           </div>
         </div>
