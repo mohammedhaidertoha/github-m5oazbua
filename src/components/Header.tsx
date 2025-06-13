@@ -31,11 +31,7 @@ const Header = () => {
   }, []);
 
   return (
-    <header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-      isScrolled 
-        ? 'bg-pa-black/95 backdrop-blur-md border-b border-pa-border shadow-elegant' 
-        : 'bg-transparent'
-    }`}>
+    <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-pa-black border-b border-pa-border shadow-elegant">
       <div className="container mx-auto container-padding">
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
