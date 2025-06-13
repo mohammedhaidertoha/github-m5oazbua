@@ -2,8 +2,12 @@ import { useState, useEffect } from 'react';
 import { Menu, X } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/auth/AuthProvider';
 
 const Header = () => {
+  const { user, loading } = useAuth();
+  console.log('[Header] Auth state:', { user: user?.email, loading });
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
