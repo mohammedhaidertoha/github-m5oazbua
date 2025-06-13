@@ -1,33 +1,12 @@
-import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User } from '@supabase/supabase-js';
-import { signOut, getUser } from '@/auth/auth';
+import { signOut } from '@/auth/auth';
+import { useAuth } from '@/auth/AuthProvider';
 import Layout from '@/components/Layout';
 import { Button } from '@/components/ui/button';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const currentUser = await getUser();
-        if (currentUser) {
-          setUser(currentUser);
-        } else {
-          navigate('/sign-in');
-        }
-      } catch (error) {
-        navigate('/sign-in');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchUser();
-  }, [navigate]);
+  const { user, loading } = useAuth();
 
   const handleSignOut = async () => {
     await signOut();

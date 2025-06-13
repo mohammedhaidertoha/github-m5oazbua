@@ -1,33 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getUser } from '@/auth/auth';
+import { useAuth } from '@/auth/AuthProvider';
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+  const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const checkUser = async () => {
-      try {
-        const user = await getUser();
-        if (!user) {
-          navigate('/sign-in');
-        }
-      } catch (error) {
-        navigate('/sign-in');
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    if (!loading && !user) {
+      navigate('/sign-in');
+    }
+  }, [user, loading, navigate]);
 
-    checkUser();
-  }, [navigate]);
-
-  if (isLoading) {
+  if (loading) {
     return null; // Or a loading spinner
   }
 
-  return children;
+  return user ? children : null;
 };
 
 export default ProtectedRoute; 
