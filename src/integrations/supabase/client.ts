@@ -9,9 +9,6 @@ if (!SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY) {
   throw new Error('Missing Supabase environment variables. Please check your .env file.');
 }
 
-console.log('Supabase URL:', SUPABASE_URL);
-console.log('Supabase Anon Key:', SUPABASE_PUBLISHABLE_KEY);
-
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
